@@ -14,27 +14,32 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "edumakers-db"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "8696a8ef-afbb-47a5-b180-e9a2eadc40d4"
 migrations_dir = "drizzle/migrations"
 
 # ==========================================================
-# R2 (Object storage) — `wrangler r2 bucket create edumakers-media`
+# R2 — 배포 당시 R2가 계정에 미활성화. dashboard.cloudflare.com
+# > R2 > Enable 후 아래 주석 해제 + `pnpm r2:create`
 # ==========================================================
-[[r2_buckets]]
-binding = "MEDIA"
-bucket_name = "edumakers-media"
-
-# Private bucket for sensitive docs (교원 인증 서류)
-[[r2_buckets]]
-binding = "DOCS"
-bucket_name = "edumakers-docs"
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "edumakers-media"
+#
+# [[r2_buckets]]
+# binding = "DOCS"
+# bucket_name = "edumakers-docs"
 
 # ==========================================================
 # KV — sessions / rate limit / cache
 # ==========================================================
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_AFTER_CREATE"
+id = "42d961d15bbf4e71b19a6655522ba246"
+
+# OpenNext ISR incremental cache (동일 KV namespace 재사용)
+[[kv_namespaces]]
+binding = "NEXT_INC_CACHE_KV"
+id = "42d961d15bbf4e71b19a6655522ba246"
 
 # ==========================================================
 # Vars (non-secret)
