@@ -1,0 +1,19 @@
+{
+  "name": "EduMakers · 에듀메이커스",
+  "short_name": "EduMakers",
+  "description": "선생님들이 만들고, 선생님들이 나누는 AI 놀이터",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "edumakers"
+main = ".open-next/worker.js"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# ==========================================================
+# D1 (SQLite) — 교체 필요: `wrangler d1 create edumakers-db`
+# ==========================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "edumakers-db"
+database_id = "REPLACE_AFTER_CREATE"
+migrations_dir = "drizzle/migrations"
+
+# ==========================================================
+# R2 (Object storage) — `wrangler r2 bucket create edumakers-media`
+# ==========================================================
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "edumakers-media"
+
+# Private bucket for sensitive docs (교원 인증 서류)
+[[r2_buckets]]
+binding = "DOCS"
+bucket_name = "edumakers-docs"
+
+# ==========================================================
+# KV — sessions / rate limit / cache
+# ==========================================================
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_AFTER_CREATE"
+
+# ==========================================================
+# Vars (non-secret)
+# ==========================================================
+[vars]
+APP_NAME = "EduMakers"
+APP_URL = "https://edumakers.pages.dev"
+
+# ==========================================================
+# 환경변수 (secrets) 는 `wrangler pages secret put <NAME>` 로 설정
+# - BETTER_AUTH_SECRET
+# - RESEND_API_KEY
+# - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
+# - KAKAO_CLIENT_ID / KAKAO_CLIENT_SECRET
+# - TURNSTILE_SECRET_KEY
+# - OPENAI_API_KEY
+# ==========================================================

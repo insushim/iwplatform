@@ -1,0 +1,20 @@
+# ========================================
+# Cloudflare 로컬 개발용 바인딩 시크릿
+# `wrangler dev` 또는 `pnpm cf:dev` 시 사용
+# 실제 파일명은 `.dev.vars` (gitignore)
+# ========================================
+BETTER_AUTH_SECRET="replace-with-32+char-random-string"
+BETTER_AUTH_URL="http://localhost:3000"
+
+RESEND_API_KEY=""
+EMAIL_FROM="EduMakers <noreply@edumakers.kr>"
+
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+KAKAO_CLIENT_ID=""
+KAKAO_CLIENT_SECRET=""
+
+TURNSTILE_SITE_KEY=""
+TURNSTILE_SECRET_KEY=""
+
+OPENAI_API_KEY=""
