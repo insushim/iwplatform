@@ -44,6 +44,13 @@ APP_NAME = "EduMakers"
 APP_URL = "https://edumakers.pages.dev"
 
 # ==========================================================
+# Cron triggers (Cloudflare Workers)
+# 매주 월요일 오전 8시 KST (= 일요일 23시 UTC) 주간 다이제스트
+# ==========================================================
+[triggers]
+crons = ["0 23 * * 0"]
+
+# ==========================================================
 # 환경변수 (secrets) 는 `wrangler pages secret put <NAME>` 로 설정
 # - BETTER_AUTH_SECRET
 # - RESEND_API_KEY

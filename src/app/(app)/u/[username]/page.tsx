@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDb } from "@/db";
-import { profiles, posts, showcaseProducts } from "@/db/schema";
+import { profiles, posts, showcaseProducts, follows } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TRUST_LEVELS } from "@/lib/constants";
 import { formatNumber } from "@/lib/utils/text";
 import { formatDate } from "@/lib/utils/date";
+import { getSessionUser } from "@/lib/auth/session";
+import { ProfileActions } from "@/components/profile/profile-actions";
 
 export default async function UserProfile({
   params,
@@ -56,6 +58,27 @@ export default async function UserProfile({
   ]);
 
   const trust = TRUST_LEVELS[p.trustLevel as keyof typeof TRUST_LEVELS];
+  const sessionUser = await getSessionUser().catch(() => null);
+  const isSelf = sessionUser?.id === p.userId;
+  const alreadyFollowing = sessionUser
+    ? Boolean(
+        (
+          await db
+            .select({ f: follows.followerId })
+            .from(follows)
+            .where(
+              and(
+                eq(follows.followerId, sessionUser.id),
+                eq(follows.followingId, p.userId),
+              ),
+            )
+            .limit(1)
+            .catch(() => [])
+        )[0],
+      )
+    : false;
+  const dmAllow = p.privacyPrefs?.allowDmFrom ?? "verified";
+  const canDm = sessionUser && !isSelf && dmAllow !== "none";
 
   return (
     <div className="container-page py-8">
@@ -82,10 +105,22 @@ export default async function UserProfile({
           <div className="mt-4 flex flex-wrap gap-6 text-sm">
             <Stat value={p.karma} label="Karma" />
             <Stat value={p.postCount} label="글" />
-            <Stat value={p.followersCount} label="팔로워" />
-            <Stat value={p.followingCount} label="팔로잉" />
+            <Link href={`/u/${p.username}/followers`} className="hover:text-primary">
+              <Stat value={p.followersCount} label="팔로워" />
+            </Link>
+            <Link href={`/u/${p.username}/following`} className="hover:text-primary">
+              <Stat value={p.followingCount} label="팔로잉" />
+            </Link>
           </div>
         </div>
+        {sessionUser ? (
+          <ProfileActions
+            targetUserId={p.userId}
+            isSelf={isSelf}
+            initialFollowing={alreadyFollowing}
+            canDm={Boolean(canDm)}
+          />
+        ) : null}
       </header>
 
       <section className="mt-10 grid gap-10 lg:grid-cols-2">

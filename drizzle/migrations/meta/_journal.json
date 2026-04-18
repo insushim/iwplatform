@@ -8,6 +8,13 @@
       "when": 1776509386930,
       "tag": "0000_bright_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1776511934130,
+      "tag": "0001_large_kate_bishop",
+      "breakpoints": true
     }
   ]
 }

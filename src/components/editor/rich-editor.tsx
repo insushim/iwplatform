@@ -1,8 +1,10 @@
 "use client";
+import { useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Image from "@tiptap/extension-image";
 import { cn } from "@/lib/utils";
 import {
   Bold,
@@ -15,9 +17,11 @@ import {
   Heading2,
   Heading3,
   Link as LinkIcon,
+  Image as ImageIcon,
   Undo,
   Redo,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface RichEditorProps {
   value: string;
@@ -26,10 +30,31 @@ interface RichEditorProps {
   className?: string;
 }
 
+async function uploadImage(file: File): Promise<string | null> {
+  if (!file.type.startsWith("image/")) {
+    toast.error("이미지만 업로드할 수 있어요");
+    return null;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    toast.error("이미지는 10MB 이하로 올려주세요");
+    return null;
+  }
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("kind", "media");
+  const r = await fetch("/api/upload", { method: "POST", body: fd });
+  if (!r.ok) {
+    toast.error("업로드 실패");
+    return null;
+  }
+  const { url } = (await r.json()) as { url: string };
+  return url;
+}
+
 export function RichEditor({
   value,
   onChange,
-  placeholder = "마크다운 단축키를 지원합니다. 학생 개인정보는 절대 포함하지 마세요.",
+  placeholder = "마크다운 단축키를 지원합니다. 이미지는 드래그·붙여넣기로 추가하세요. 학생 개인정보 금지.",
   className,
 }: RichEditorProps) {
   const editor = useEditor({
@@ -52,6 +77,9 @@ export function RichEditor({
         openOnClick: false,
         HTMLAttributes: { class: "text-primary underline underline-offset-2" },
       }),
+      Image.configure({
+        HTMLAttributes: { class: "rounded-lg my-2 max-w-full" },
+      }),
       Placeholder.configure({ placeholder }),
     ],
     content: value,
@@ -63,13 +91,51 @@ export function RichEditor({
         class:
           "prose-kor min-h-[320px] w-full rounded-b-lg border border-t-0 bg-background px-4 py-3 text-[15px] leading-relaxed focus:outline-none",
       },
+      handleDrop: (_view, event) => {
+        const files = Array.from(event.dataTransfer?.files ?? []);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void handleFiles(files);
+        return true;
+      },
+      handlePaste: (_view, event) => {
+        const items = Array.from(event.clipboardData?.items ?? []);
+        const files = items
+          .map((i) => (i.kind === "file" ? i.getAsFile() : null))
+          .filter((f): f is File => f !== null);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void handleFiles(files);
+        return true;
+      },
     },
   });
 
+  const handleFiles = useCallback(
+    async (files: File[]) => {
+      if (!editor) return;
+      for (const file of files) {
+        const url = await uploadImage(file);
+        if (url) editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      }
+    },
+    [editor],
+  );
+
+  const handleImageButton = () => {
+    if (!editor) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = true;
+    input.onchange = () => {
+      if (input.files) void handleFiles(Array.from(input.files));
+    };
+    input.click();
+  };
+
   if (!editor) {
-    return (
-      <div className="min-h-[380px] rounded-lg border bg-muted/20" aria-hidden />
-    );
+    return <div className="min-h-[380px] rounded-lg border bg-muted/20" aria-hidden />;
   }
 
   return (
@@ -152,17 +218,14 @@ export function RichEditor({
         >
           <LinkIcon className="size-4" />
         </ToolbarButton>
+        <ToolbarButton onClick={handleImageButton} label="이미지">
+          <ImageIcon className="size-4" />
+        </ToolbarButton>
         <Divider />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          label="되돌리기"
-        >
+        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} label="되돌리기">
           <Undo className="size-4" />
         </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          label="다시 실행"
-        >
+        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} label="다시 실행">
           <Redo className="size-4" />
         </ToolbarButton>
       </div>

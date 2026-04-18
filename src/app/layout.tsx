@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ServiceWorkerRegister } from "@/components/providers/service-worker-register";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </a>
             {children}
             <Toaster richColors position="top-right" />
+            <ServiceWorkerRegister />
           </QueryProvider>
         </ThemeProvider>
       </body>

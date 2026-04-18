@@ -23,6 +23,11 @@ declare global {
     TURNSTILE_SITE_KEY?: string;
     TURNSTILE_SECRET_KEY?: string;
     OPENAI_API_KEY?: string;
+    VAPID_PUBLIC_KEY?: string;
+    VAPID_PRIVATE_KEY?: string;
+    VAPID_SUBJECT?: string;
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY?: string;
+    CRON_SECRET?: string;
   }
 }
 

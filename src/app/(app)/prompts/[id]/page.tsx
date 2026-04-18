@@ -4,8 +4,11 @@ import { getDb } from "@/db";
 import { prompts, profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/common/copy-button";
+import {
+  PromptFavoriteButton,
+  PromptForkButton,
+} from "@/components/prompts/favorite-fork-buttons";
 
 export default async function PromptDetail({
   params,
@@ -90,8 +93,8 @@ export default async function PromptDetail({
       ) : null}
 
       <div className="mt-8 flex gap-2">
-        <Button>즐겨찾기</Button>
-        <Button variant="outline">포크</Button>
+        <PromptFavoriteButton promptId={p.id} initialCount={p.favoriteCount} />
+        <PromptForkButton promptId={p.id} />
       </div>
     </div>
   );

@@ -51,8 +51,8 @@ export function SignupForm() {
           displayName: values.displayName,
         }),
       });
-      toast.success("가입이 완료되었습니다! 교원 인증을 진행해 주세요.");
-      router.push("/verify-teacher");
+      toast.success("가입이 완료되었습니다!");
+      router.push("/onboarding");
       router.refresh();
     });
   }

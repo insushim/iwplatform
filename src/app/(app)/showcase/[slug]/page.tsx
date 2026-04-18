@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDb } from "@/db";
-import { showcaseProducts, profiles } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { showcaseProducts, profiles, showcaseComments } from "@/db/schema";
+import { asc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ExternalLink, Code2 as Github } from "lucide-react";
 import { ShowcaseUpvoteButton } from "@/components/showcase/upvote-button";
+import { ShowcaseComments } from "@/components/showcase/comment-section";
+import { getSessionProfile } from "@/lib/auth/session";
 
 export default async function ShowcaseDetail({
   params,
@@ -26,6 +28,18 @@ export default async function ShowcaseDetail({
   if (!row) notFound();
   const { p, m } = row;
   const screenshots = (p.screenshots ?? []) as string[];
+
+  const [cmts, session] = await Promise.all([
+    db
+      .select({ c: showcaseComments, a: profiles })
+      .from(showcaseComments)
+      .leftJoin(profiles, eq(profiles.userId, showcaseComments.authorId))
+      .where(eq(showcaseComments.productId, p.id))
+      .orderBy(asc(showcaseComments.createdAt))
+      .catch(() => []),
+    getSessionProfile().catch(() => null),
+  ]);
+  const canComment = session?.profile?.teacherStatus === "verified";
 
   return (
     <div className="container-page py-8">
@@ -82,6 +96,20 @@ export default async function ShowcaseDetail({
               </p>
             </section>
           ) : null}
+
+          <ShowcaseComments
+            productId={p.id}
+            canComment={canComment}
+            initial={cmts.map(({ c, a }) => ({
+              id: c.id,
+              content: c.content,
+              createdAt: c.createdAt,
+              isMakerReply: c.isMakerReply,
+              authorName: a?.displayName ?? "익명",
+              authorUsername: a?.username ?? null,
+              authorAvatar: a?.avatarUrl ?? null,
+            }))}
+          />
         </article>
 
         <aside className="space-y-5">
