@@ -6,10 +6,13 @@ import { eq, and, asc } from "drizzle-orm";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowBigUp, ArrowBigDown, MessageSquare, Bookmark, Flag, Share2 } from "lucide-react";
+import { MessageSquare, Share2 } from "lucide-react";
 import { timeAgo, formatDateTime } from "@/lib/utils/date";
 import { formatNumber } from "@/lib/utils/text";
 import { CommentSection } from "@/components/posts/comment-section";
+import { PostVoteButtons } from "@/components/posts/vote-buttons";
+import { BookmarkButton } from "@/components/posts/bookmark-button";
+import { ReportDialog } from "@/components/common/report-dialog";
 
 export async function generateMetadata({
   params,
@@ -106,34 +109,26 @@ export default async function PostDetailPage({
           </div>
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Bookmark className="size-4" />
-            북마크
-          </Button>
+          <BookmarkButton postId={p.id} />
           <Button variant="outline" size="sm">
             <Share2 className="size-4" />
             공유
           </Button>
-          <Button variant="ghost" size="sm">
-            <Flag className="size-4" />
-          </Button>
+          <ReportDialog targetType="post" targetId={p.id} />
         </div>
       </div>
 
-      <div className="prose-kor mt-8 whitespace-pre-wrap text-[17px] leading-[1.8]">
-        {p.content}
-      </div>
+      <div
+        className="prose-kor mt-8 text-[17px] leading-[1.8] [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-bold [&_p]:my-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-4 [&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_pre]:my-4 [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-4 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2"
+        dangerouslySetInnerHTML={{ __html: p.content }}
+      />
 
       <footer className="mt-10 flex items-center gap-4 border-y py-4">
-        <div className="inline-flex items-center gap-1 rounded-full border p-1">
-          <Button variant="ghost" size="icon" className="size-8 rounded-full">
-            <ArrowBigUp className="size-4" />
-          </Button>
-          <span className="px-2 text-sm font-bold">{formatNumber(p.voteScore)}</span>
-          <Button variant="ghost" size="icon" className="size-8 rounded-full">
-            <ArrowBigDown className="size-4" />
-          </Button>
-        </div>
+        <PostVoteButtons
+          postId={p.id}
+          initialScore={p.voteScore}
+          orientation="horizontal"
+        />
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
           <MessageSquare className="size-4" /> 댓글 {formatNumber(p.commentCount)}
         </span>

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { RichEditor } from "@/components/editor/rich-editor";
 
 export function NewPostForm({
   categories,
@@ -30,17 +30,22 @@ export function NewPostForm({
     : categories[0]?.id;
 
   const [isAnon, setIsAnon] = useState(false);
+  const [html, setHtml] = useState("");
+  const [text, setText] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const contentText = String(fd.get("content") ?? "");
+    if (text.trim().length === 0) {
+      toast.error("내용을 입력하세요");
+      return;
+    }
     const payload = {
       categoryId: Number(fd.get("categoryId")),
       title: String(fd.get("title") ?? "").trim(),
-      content: contentText,
-      contentText,
-      excerpt: contentText.slice(0, 200),
+      content: html,
+      contentText: text,
+      excerpt: text.slice(0, 200),
       tags: String(fd.get("tags") ?? "")
         .split(",")
         .map((t) => t.trim())
@@ -92,13 +97,13 @@ export function NewPostForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="content">내용</Label>
-        <Textarea
-          id="content"
-          name="content"
-          required
-          className="min-h-[320px] leading-relaxed"
-          placeholder="마크다운을 지원합니다. 학생 개인정보는 절대 포함하지 마세요."
+        <Label>내용</Label>
+        <RichEditor
+          value={html}
+          onChange={(h, t) => {
+            setHtml(h);
+            setText(t);
+          }}
         />
       </div>
 

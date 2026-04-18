@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Eye, ArrowBigUp } from "lucide-react";
+import { MessageSquare, Eye } from "lucide-react";
 import { timeAgo } from "@/lib/utils/date";
 import { formatNumber } from "@/lib/utils/text";
+import { PostVoteButtons } from "./vote-buttons";
 
 export interface PostListItem {
   id: string;
@@ -29,13 +30,7 @@ export function PostListCard({ post }: { post: PostListItem }) {
     <article className="group rounded-xl border bg-card p-5 transition hover:border-primary/40 hover:shadow-md">
       <div className="flex gap-4">
         <div className="flex w-12 shrink-0 flex-col items-center">
-          <button
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
-            aria-label="추천"
-          >
-            <ArrowBigUp className="size-5" />
-          </button>
-          <span className="text-sm font-bold">{formatNumber(post.voteScore)}</span>
+          <PostVoteButtons postId={post.id} initialScore={post.voteScore} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

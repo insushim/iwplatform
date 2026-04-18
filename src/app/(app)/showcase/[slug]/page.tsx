@@ -3,10 +3,10 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import { showcaseProducts, profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowBigUp, ExternalLink, Code2 as Github } from "lucide-react";
+import { ExternalLink, Code2 as Github } from "lucide-react";
+import { ShowcaseUpvoteButton } from "@/components/showcase/upvote-button";
 
 export default async function ShowcaseDetail({
   params,
@@ -86,12 +86,7 @@ export default async function ShowcaseDetail({
 
         <aside className="space-y-5">
           <div className="rounded-2xl border bg-card p-5">
-            <div className="flex items-center gap-2">
-              <ArrowBigUp className="size-5 text-primary" />
-              <span className="text-2xl font-bold">{p.upvoteCount}</span>
-              <span className="text-sm text-muted-foreground">upvotes</span>
-            </div>
-            <Button className="mt-4 w-full">추천하기</Button>
+            <ShowcaseUpvoteButton productId={p.id} initialCount={p.upvoteCount} />
             <div className="mt-4 flex flex-col gap-2">
               {p.websiteUrl ? (
                 <a

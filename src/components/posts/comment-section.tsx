@@ -3,9 +3,11 @@ import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowBigUp, Loader2, MessageSquare } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react";
 import { timeAgo } from "@/lib/utils/date";
 import { toast } from "sonner";
+import { CommentVoteButtons } from "./vote-buttons";
+import { ReportDialog } from "@/components/common/report-dialog";
 
 type CommentItem = {
   id: string;
@@ -99,15 +101,17 @@ export function CommentSection({
                   {c.isDeleted ? "삭제된 댓글입니다." : c.content}
                 </p>
                 <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                  <button className="inline-flex items-center gap-1 hover:text-primary">
-                    <ArrowBigUp className="size-3.5" /> {c.voteScore}
-                  </button>
+                  <CommentVoteButtons
+                    commentId={c.id}
+                    initialScore={c.voteScore}
+                  />
                   <button
                     onClick={() => setReplyTo(c.id)}
                     className="inline-flex items-center gap-1 hover:text-primary"
                   >
                     <MessageSquare className="size-3.5" /> 답글
                   </button>
+                  <ReportDialog targetType="comment" targetId={c.id} />
                 </div>
               </div>
             </div>

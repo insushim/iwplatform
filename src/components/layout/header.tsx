@@ -13,6 +13,7 @@ const NAV = [
   { href: "/prompts", label: "프롬프트" },
   { href: "/groups", label: "인디모임" },
   { href: "/events", label: "이벤트" },
+  { href: "/leaderboard", label: "리더보드" },
 ];
 
 export async function Header() {
