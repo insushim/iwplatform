@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDb } from "@/db";
 import { profiles } from "@/db/schema";
 import { desc } from "drizzle-orm";
@@ -32,7 +33,12 @@ export default async function AdminUsersPage() {
             {rows.map((r) => (
               <tr key={r.userId} className="border-t">
                 <td className="p-3">
-                  <p className="font-medium">{r.displayName}</p>
+                  <Link
+                    href={`/admin/users/${r.userId}`}
+                    className="font-medium hover:text-primary"
+                  >
+                    {r.displayName}
+                  </Link>
                   <p className="text-xs text-muted-foreground">@{r.username}</p>
                 </td>
                 <td className="p-3">

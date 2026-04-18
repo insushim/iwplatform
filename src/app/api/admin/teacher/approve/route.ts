@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
-import { teacherVerifications, profiles } from "@/db/schema";
+import { teacherVerifications, profiles, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireRole } from "@/lib/auth/session";
 import { logAudit } from "@/lib/security/audit";
+import { sendEmail } from "@/lib/email/client";
+import { teacherVerifiedEmail } from "@/lib/email/templates";
+import { createNotification } from "@/lib/notifications";
 
 
 export async function POST(req: Request) {
@@ -43,6 +46,28 @@ export async function POST(req: Request) {
     action: "teacher.verified",
     targetType: "user",
     targetId: v.userId,
+  });
+
+  // 이메일 + 인앱 알림
+  const [target] = await db
+    .select({
+      email: users.email,
+      displayName: profiles.displayName,
+    })
+    .from(users)
+    .leftJoin(profiles, eq(profiles.userId, users.id))
+    .where(eq(users.id, v.userId))
+    .limit(1);
+  if (target?.email) {
+    const tpl = teacherVerifiedEmail(target.displayName ?? "선생님");
+    void sendEmail({ to: target.email, subject: tpl.subject, html: tpl.html });
+  }
+  void createNotification({
+    userId: v.userId,
+    type: "teacher_verified",
+    title: "교원 인증이 승인되었어요 ✓",
+    body: "이제 글쓰기·쇼케이스·DM 모든 기능을 사용할 수 있습니다.",
+    link: "/feed",
   });
 
   return NextResponse.redirect(new URL("/admin/teacher-verification", req.url), 303);

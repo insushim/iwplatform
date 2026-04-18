@@ -3,8 +3,10 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { NotificationBell } from "./notification-bell";
 import { getSessionProfile } from "@/lib/auth/session";
 import { MobileNav } from "./mobile-nav";
+import { Search } from "lucide-react";
 
 const NAV = [
   { href: "/feed", label: "피드" },
@@ -36,6 +38,14 @@ export async function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          <Link
+            href="/search"
+            aria-label="검색"
+            className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <Search className="size-5" />
+          </Link>
+          {session?.user ? <NotificationBell /> : null}
           <ThemeToggle />
           {session?.user ? (
             <UserMenu

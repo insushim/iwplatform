@@ -13,6 +13,7 @@ import { CommentSection } from "@/components/posts/comment-section";
 import { PostVoteButtons } from "@/components/posts/vote-buttons";
 import { BookmarkButton } from "@/components/posts/bookmark-button";
 import { ReportDialog } from "@/components/common/report-dialog";
+import { ViewTracker } from "@/components/posts/view-tracker";
 
 export async function generateMetadata({
   params,
@@ -69,6 +70,7 @@ export default async function PostDetailPage({
 
   return (
     <article className="container-reading py-8">
+      <ViewTracker postId={p.id} />
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Link
           href={`/posts/category/${cat.slug}`}

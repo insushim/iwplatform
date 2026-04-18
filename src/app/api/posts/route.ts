@@ -8,6 +8,8 @@ import { makeSlug, id as makeId } from "@/lib/utils/slug";
 import { sanitizeHtml } from "@/lib/utils/sanitize";
 import { ipRateLimit } from "@/lib/security/rate-limit";
 import { logAudit } from "@/lib/security/audit";
+import { notifyMentions } from "@/lib/notifications";
+import { excerpt } from "@/lib/utils/text";
 
 
 export async function GET(req: Request) {
@@ -81,6 +83,22 @@ export async function POST(req: Request) {
     action: "post.created",
     targetType: "post",
     targetId: pid,
+  });
+
+  // @mention 알림
+  const [authorProfile] = await db
+    .select({ displayName: profiles.displayName })
+    .from(profiles)
+    .where(eq(profiles.userId, user.id))
+    .limit(1);
+  void notifyMentions({
+    text: parsed.data.contentText,
+    actorId: user.id,
+    actorName: authorProfile?.displayName ?? user.name,
+    targetType: "post",
+    targetId: pid,
+    link: `/posts/${slug}`,
+    preview: excerpt(parsed.data.title, 100),
   });
 
   return NextResponse.json({ id: pid, slug });

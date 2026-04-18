@@ -12,9 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { RichEditor } from "@/components/editor/rich-editor";
+import { useDraft } from "@/hooks/use-draft";
+import { useEffect } from "react";
+import { timeAgo } from "@/lib/utils/date";
 
 export function NewPostForm({
   categories,
@@ -32,6 +35,30 @@ export function NewPostForm({
   const [isAnon, setIsAnon] = useState(false);
   const [html, setHtml] = useState("");
   const [text, setText] = useState("");
+  const [title, setTitle] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const draft = useDraft("edumakers:draft:new-post", {
+    title,
+    html,
+    tagsInput,
+    isAnon,
+  });
+  useEffect(() => {
+    const d = draft.load();
+    if (d?.data && typeof d.data === "object") {
+      const obj = d.data as {
+        title?: string;
+        html?: string;
+        tagsInput?: string;
+        isAnon?: boolean;
+      };
+      if (obj.title) setTitle(obj.title);
+      if (obj.html) setHtml(obj.html);
+      if (obj.tagsInput) setTagsInput(obj.tagsInput);
+      if (typeof obj.isAnon === "boolean") setIsAnon(obj.isAnon);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,11 +69,11 @@ export function NewPostForm({
     }
     const payload = {
       categoryId: Number(fd.get("categoryId")),
-      title: String(fd.get("title") ?? "").trim(),
+      title: title.trim(),
       content: html,
       contentText: text,
       excerpt: text.slice(0, 200),
-      tags: String(fd.get("tags") ?? "")
+      tags: tagsInput
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean)
@@ -68,6 +95,7 @@ export function NewPostForm({
       }
       const { slug } = (await r.json()) as { slug: string };
       toast.success("발행되었습니다");
+      draft.clear();
       router.push(`/posts/${slug}`);
       router.refresh();
     });
@@ -93,7 +121,15 @@ export function NewPostForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="title">제목</Label>
-        <Input id="title" name="title" required maxLength={200} placeholder="제목을 입력하세요" />
+        <Input
+          id="title"
+          name="title"
+          required
+          maxLength={200}
+          placeholder="제목을 입력하세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </div>
 
       <div className="space-y-1.5">
@@ -109,7 +145,13 @@ export function NewPostForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
-        <Input id="tags" name="tags" placeholder="AI수업, 프롬프트, 초등" />
+        <Input
+          id="tags"
+          name="tags"
+          placeholder="AI수업, 프롬프트, 초등"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+        />
       </div>
 
       <label className="flex items-center gap-3 rounded-md bg-muted/40 p-3">
@@ -125,13 +167,19 @@ export function NewPostForm({
         </div>
       </label>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="size-4 animate-spin" /> : "발행"}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           취소
         </Button>
+        {draft.saved ? (
+          <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Save className="size-3" />
+            자동저장 · {timeAgo(draft.saved)}
+          </span>
+        ) : null}
       </div>
     </form>
   );

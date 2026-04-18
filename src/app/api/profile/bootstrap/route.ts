@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { getSessionUser } from "@/lib/auth/session";
 import { usernameSchema } from "@/lib/validators";
 import { logAudit } from "@/lib/security/audit";
+import { sendEmail } from "@/lib/email/client";
+import { welcomeEmail } from "@/lib/email/templates";
 
 
 const schema = z.object({
@@ -52,6 +54,9 @@ export async function POST(req: Request) {
     targetType: "profile",
     targetId: user.id,
   });
+
+  const tpl = welcomeEmail(parsed.data.displayName);
+  void sendEmail({ to: user.email, subject: tpl.subject, html: tpl.html });
 
   return NextResponse.json({ ok: true });
 }

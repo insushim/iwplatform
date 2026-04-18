@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/utils/date";
+import { RejectForm } from "./reject-form";
 
 export default async function TeacherVerificationPage() {
   const db = getDb();
@@ -64,12 +65,7 @@ export default async function TeacherVerificationPage() {
                       승인
                     </Button>
                   </form>
-                  <form action="/api/admin/teacher/reject" method="post">
-                    <input type="hidden" name="verificationId" value={v.id} />
-                    <Button size="sm" variant="destructive" type="submit">
-                      거절
-                    </Button>
-                  </form>
+                  <RejectForm verificationId={v.id} />
                 </div>
               </div>
             </li>

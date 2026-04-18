@@ -6,6 +6,8 @@ import { getSessionUser, requireVerifiedTeacher } from "@/lib/auth/session";
 import { commentCreateSchema } from "@/lib/validators";
 import { id as makeId } from "@/lib/utils/slug";
 import { ipRateLimit } from "@/lib/security/rate-limit";
+import { createNotification, notifyMentions } from "@/lib/notifications";
+import { excerpt } from "@/lib/utils/text";
 
 
 export async function POST(req: Request) {
@@ -75,6 +77,62 @@ export async function POST(req: Request) {
     .from(profiles)
     .where(eq(profiles.userId, user.id))
     .limit(1);
+  const authorName = author?.displayName ?? user.name;
+
+  // 글쓴이 / 부모 댓글 작성자에 알림
+  const [post] = await db
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      authorId: posts.authorId,
+    })
+    .from(posts)
+    .where(eq(posts.id, parsed.data.postId))
+    .limit(1);
+
+  if (post) {
+    if (parsed.data.parentId) {
+      const [parent] = await db
+        .select({ authorId: comments.authorId })
+        .from(comments)
+        .where(eq(comments.id, parsed.data.parentId))
+        .limit(1);
+      if (parent && parent.authorId !== user.id) {
+        void createNotification({
+          userId: parent.authorId,
+          type: "reply",
+          actorId: user.id,
+          targetType: "comment",
+          targetId: cid,
+          title: `${authorName}님이 내 댓글에 답글을 남겼어요`,
+          body: excerpt(parsed.data.content, 140),
+          link: `/posts/${post.slug}#c-${cid}`,
+        });
+      }
+    } else if (post.authorId !== user.id) {
+      void createNotification({
+        userId: post.authorId,
+        type: "reply",
+        actorId: user.id,
+        targetType: "post",
+        targetId: post.id,
+        title: `${authorName}님이 내 글에 댓글을 남겼어요`,
+        body: excerpt(parsed.data.content, 140),
+        link: `/posts/${post.slug}#c-${cid}`,
+      });
+    }
+    // @mention
+    void notifyMentions({
+      text: parsed.data.content,
+      actorId: user.id,
+      actorName: authorName,
+      targetType: "comment",
+      targetId: cid,
+      link: `/posts/${post.slug}#c-${cid}`,
+      preview: excerpt(parsed.data.content, 140),
+    });
+  }
 
   return NextResponse.json({
     id: cid,

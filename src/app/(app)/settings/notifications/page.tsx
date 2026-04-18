@@ -4,6 +4,8 @@ import { getDb } from "@/db";
 import { profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NotificationPrefsForm } from "./prefs-form";
+import { Card, CardContent } from "@/components/ui/card";
+import { PushSubscribeButton } from "@/components/notifications/push-subscribe-button";
 
 export const metadata: Metadata = { title: "알림 설정" };
 
@@ -27,8 +29,19 @@ export default async function NotificationSettingsPage() {
       <p className="mt-2 text-sm text-muted-foreground">
         무엇을 어떻게 받을지 고르세요.
       </p>
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
         <NotificationPrefsForm initial={prefs} />
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-lg font-semibold">브라우저 푸시</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              이 기기의 브라우저에서 실시간 알림을 받습니다. (PWA 설치 시에도 동작)
+            </p>
+            <div className="mt-4">
+              <PushSubscribeButton />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
